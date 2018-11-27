@@ -1,0 +1,227 @@
+﻿@using CPFamilyLib.Entity
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>泾彩党建</title>
+    <link rel="stylesheet" href="/Content/css/by-ui.css"/>
+    <link rel="stylesheet" href="/Content/css/font-awesome.css" />
+    <link href="/scripts/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="/Content/css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
+    <link rel="stylesheet" type="text/css" href="/scripts/layui/css/layui.css" />
+    <link rel="stylesheet" type="text/css" href="/Content/wangEditor/wangEditor.css">
+    <style>
+        .form_datetime{
+            float:right !important;
+            width:calc(100% - 110px) !important;
+            margin-right:20px !important;
+            margin-bottom:10px !important;
+            color:#367FA9 !important;
+            padding-right:0px !important;
+            padding-left:0px !important;
+        }
+
+        .form_datetime .form-control, 
+        .form_datetime .input-group-addon,
+        .form_datetime .input-group-addon{
+             border-color:#367FA9 !important;
+             background-color:white !important;
+        }
+
+        .form_datetime .form-control{
+            border-right:none !important;
+        }
+
+        #btnAdd{
+            font-size:20px;
+            font-weight:bolder;
+            border:none;
+            width:70%;
+            margin:10px auto;
+            margin-top:30px;
+            outline:none;
+            background-color:#367FA9;
+            color:white;
+            padding:5px;
+            border-radius:5px;
+            display:block;
+        }
+        
+
+    </style>
+</head>
+<body>
+    <input id="activeid" type="hidden" value="@ViewBag.active"/>
+    <div>
+        <div class="by-section">
+            <div class="by-section-title">发布活动</div>
+            <div class="by-section-content">
+                <div class="by-form">
+                    <div class="by-form-row">
+                        <span class="by-form-label">活动名称</span>
+                        <input class="by-form-input" id="title" type="text" />
+                    </div>
+                    <div class="by-form-row">
+                        <span class="by-form-label" style="margin-top:10px;">活动时间</span>
+                        <div class="input-group date form_datetime col-md-5"
+                             data-date-format="yyyy-MM-dd hh:ii" 
+                             data-link-field="dtp_input1"
+                             style="">
+                            <input id="time" class="form-control" size="16" type="text" value="" readonly>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+                        </div>
+                        <input type="hidden" id="dtp_input1" value="" /><br />
+                    </div>
+                    <div class="by-form-row" style="clear:both;">
+                        <span class="by-form-label">活动地点</span>
+                        <input class="by-form-input" id="location" type="text" />
+                    </div>
+                    <div class="by-form-row">
+                        <span class="by-form-label" style="float:left;">活动内容</span>
+                        <div class="by-form-input" id="content" style="padding:0px;"></div>
+                    </div>
+                    <div class="by-form-row">
+                        <span class="by-form-label" style="float:left;">活动类别</span>
+                        <select class="by-form-input" id="activitytype" style="padding-right:10px;" multiple="multiple" type="text">
+                            @*@foreach(ActivityType type in ViewBag.types)
+                            {
+                                <option value="@type.Id">@type.TypeName</option>
+                            }*@
+                        </select>
+                    </div>
+                    <div class="by-form-row">
+                        <span class="by-form-label">联系人</span>
+                        <input class="by-form-input" id="contactorname" type="text" />
+                    </div>
+                    <div class="by-form-row">
+                        <span class="by-form-label">联系人电话</span>
+                        <input class="by-form-input"  id="contactnumer" type="text" />
+                    </div>
+                    <div class="by-form-row">
+                        <button id="btnAdd">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/scripts/jquery-3.2.1.js"></script>
+    <script src="/scripts/bootstrap/js/bootstrap.js"></script>
+    <script src="/scripts/bootstrap-datetimepicker.js"></script>
+    <script src="/scripts/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script type="text/javascript" src="/scripts/layui/layui.js"></script>
+    <script type="text/javascript" src="/scripts/layui/layui.all.js"></script>
+    <script type="text/javascript" src="/Content/wangEditor/wangEditor.js"></script>
+    <script>
+        $('.form_datetime').datetimepicker({
+            language: 'zh-CN',
+            weekStart: 1,
+            todayBtn: 1,
+            autoclose: 1,
+            todayHighlight: 1,
+            startView: 2,
+            forceParse: 0,
+            showMeridian: 1
+        });
+        $('.form_datetime').datetimepicker('setDate', new Date('@DateTime.Now.ToString("yyyy-MM-dd HH:mm")'));
+
+        var editor = null;
+        
+        function customUploadImg(files, obj) {
+            var formdata = new FormData();
+            formdata.append(files[0].name, files[0]);
+            $.ajax({
+                url:'/activity/upload/1',
+                type:'post',
+                data: formdata,
+                success: function (data) {
+                    console.log(data);
+                },
+                error: function (data) {
+                    console.log(data);
+                }
+            })
+        }
+
+        $(function () {
+            var E = window.wangEditor;
+            editor = new E('#content');
+            editor.customConfig.uploadImgShowBase64 = true;
+            editor.customConfig.uploadImgServer = "/activity/upload";
+            editor.customConfig.uploadImgHooks = {
+                customInsert: function (insertImg, result, editor) {
+                    var url =result;
+                    insertImg(url);
+                }
+            }
+            editor.create();
+            $("#btnUpload").click(function () {
+                $.ajax({
+                    url: '/activity/upload/' + $("#activeid").val(),
+                    type: 'post',
+                    data: new FormData($('#uploadform')[0]),
+                    processData: false,
+                    contentType: false,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data === "error") return;
+                        var img = '<img src="' + data + '"/>';
+                        $(".by-images-list").append(img);
+                        $(".by-images-list img:last-child").click(function () {
+                            var _this = $(this);
+                            var id = _this.attr('src').substr(_this.attr('src').lastIndexOf('/') + 1);
+                            if (id.indexOf(".") != -1) {
+                                id = id.substr(0, id.indexOf('.'));
+                            }
+                            $.ajax({
+                                url: '/activity/deleteimage/' + id,
+                                type: 'post',
+                                dataType:'json',
+                                success: function (data) {
+                                    if (data.msg === "success") {
+                                        _this.remove();
+                                        if ($(".by-images-list img").length == 0) {
+                                            $("#by-images-list").css("display", "none");
+                                        }
+                                    }
+                                }
+                            })
+                        });
+                        $("#by-images-list").css("display", "block");
+                    },
+                    error: function (data) {
+                        layer.alert(data.msg);
+                    }
+                });
+                return false;
+            });
+
+            $("#btnAdd").click(function () {
+                $.ajax({
+                    url: '/Activity/Add',
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        title: $("#title").val(),
+                        location: $("#location").val(),
+                        content: $("#content").val(),
+                        guid: $("#activeid").val(),
+                        contactorname: $("#contactorname").val(),
+                        contactnumer: $("#contactnumer").val(),
+                        time: $("#time").val(),
+                        types: $("#activitytype").val()
+                    },
+                    success: function (data) {
+                        layer.alert(data.msg);
+                    }
+                })
+            });
+        });
+    </script>
+</body>
+</html>
